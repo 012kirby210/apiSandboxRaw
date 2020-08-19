@@ -3,111 +3,144 @@
 namespace App\Entity;
 
 use ApiPlatform\Core\Annotation\ApiResource;
+use Symfony\Component\Serializer\Annotation\Groups;
 use App\Repository\CheeseListingRepository;
 use Doctrine\ORM\Mapping as ORM;
+use Carbon\Carbon;
 
 /**
- * @ApiResource()
+ * @ApiResource(
+ *   normalizationContext={"groups"={"api_read"}},
+ *   denormalizationContext={"groups"={"api_write"}}
+ * )
  * @ORM\Entity(repositoryClass=CheeseListingRepository::class)
  */
 class CheeseListing
 {
-    /**
-     * @ORM\Id()
-     * @ORM\GeneratedValue()
-     * @ORM\Column(type="integer")
-     */
-    private $id;
+  /**
+   * @ORM\Id()
+   * @ORM\GeneratedValue()
+   * @ORM\Column(type="integer")
+   * @Groups({"api_read"})
+   */
+  private $id;
 
-    /**
-     * @ORM\Column(type="string", length=255)
-     */
-    private $title;
+  /**
+   * @ORM\Column(type="string", length=255)
+   * @Groups({"api_read","api_write"})
+   */
+  private $title;
 
-    /**
-     * @ORM\Column(type="text", nullable=true)
-     */
-    private $description;
+  /**
+   * @ORM\Column(type="text", nullable=true)
+   * @Groups({"api_read"})
+   */
+  private $description;
 
-    /**
-     * The price of this delicious cheese in cents.
-     * @ORM\Column(type="integer", nullable=true)
-     *
-     */
-    private $price;
+  /**
+   * The price of this delicious cheese in cents.
+   * @ORM\Column(type="integer", nullable=true)
+   * @Groups({"api_read","api_write"})
+   *
+   */
+  private $price;
 
-    /**
-     * @ORM\Column(type="datetime")
-     */
-    private $createdAt;
+  /**
+   * @ORM\Column(type="datetime")
+   * @Groups({"api_read"})
+   */
+  private $createdAt;
 
-    /**
-     * @ORM\Column(type="boolean")
-     */
-    private $isPublished;
+  /**
+   * @ORM\Column(type="boolean")
+   */
+  private $isPublished = false;
 
-    public function getId(): ?int
-    {
-        return $this->id;
-    }
+  public function __construct()
+  {
+    $this->createdAt = new \DateTimeImmutable();
+  }
 
-    public function getTitle(): ?string
-    {
-        return $this->title;
-    }
+  public function getId(): ?int
+  {
+    return $this->id;
+  }
 
-    public function setTitle(string $title): self
-    {
-        $this->title = $title;
+  public function getTitle(): ?string
+  {
+    return $this->title;
+  }
 
-        return $this;
-    }
+  public function setTitle(string $title): self
+  {
+    $this->title = $title;
 
-    public function getDescription(): ?string
-    {
-        return $this->description;
-    }
+    return $this;
+  }
 
-    public function setDescription(?string $description): self
-    {
-        $this->description = $description;
+  public function getDescription(): ?string
+  {
+    return $this->description;
+  }
 
-        return $this;
-    }
+  /**
+   * Transform a description into a line breaked description.
+   * @param string|null $description
+   * @return $this
+   *
+   * @Groups({"api_write"})
+   */
+  public function setTextDescription(?string $description): self
+  {
+    $this->description = nl2br($description);
 
-    public function getPrice(): ?int
-    {
-        return $this->price;
-    }
+    return $this;
+  }
 
-    public function setPrice(?int $price): self
-    {
-        $this->price = $price;
+  public function setDescription(?string $description): self
+  {
+    $this->description = $description;
 
-        return $this;
-    }
+    return $this;
+  }
 
-    public function getCreatedAt(): ?\DateTimeInterface
-    {
-        return $this->createdAt;
-    }
+  public function getPrice(): ?int
+  {
+    return $this->price;
+  }
 
-    public function setCreatedAt(\DateTimeInterface $createdAt): self
-    {
-        $this->createdAt = $createdAt;
+  public function setPrice(?int $price): self
+  {
+    $this->price = $price;
 
-        return $this;
-    }
+    return $this;
+  }
 
-    public function getIsPublished(): ?bool
-    {
-        return $this->isPublished;
-    }
+  public function getCreatedAt(): ?\DateTimeInterface
+  {
+    return $this->createdAt;
+  }
 
-    public function setIsPublished(bool $isPublished): self
-    {
-        $this->isPublished = $isPublished;
+  /**
+   * Get the time diff relative to now as a human understandable string.
+   * @return string|null
+   *
+   * @Groups({"api_read"})
+   */
+  public function getCreatedAtAgo(): ?string
+  {
+    return Carbon::instance($this->getCreatedAt())->shortRelativeToNowDiffForHumans();
+  }
 
-        return $this;
-    }
+  public function getIsPublished(): ?bool
+  {
+    return $this->isPublished;
+  }
+
+  public function setIsPublished(bool $isPublished): self
+  {
+    $this->isPublished = $isPublished;
+
+    return $this;
+  }
 }
