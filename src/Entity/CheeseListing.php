@@ -6,6 +6,7 @@ use ApiPlatform\Core\Annotation\ApiFilter;
 use ApiPlatform\Core\Annotation\ApiResource;
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\BooleanFilter;
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\SearchFilter;
+use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Serializer\Annotation\SerializedName;
 use App\Repository\CheeseListingRepository;
@@ -39,12 +40,19 @@ class CheeseListing
   /**
    * @ORM\Column(type="string", length=255)
    * @Groups({"api_read","api_write"})
+   * @Assert\NotBlank()
+   * @Assert\Length(
+   *   min=2,
+   *   max=50,
+   *   maxMessage="Décrivez votre fromage en moins de 50 charactères."
+   * )
    */
   private $title;
 
   /**
    * @ORM\Column(type="text", nullable=true)
    * @Groups({"api_read"})
+   * @Assert\NotBlank()
    */
   private $description;
 
@@ -52,7 +60,10 @@ class CheeseListing
    * The price of this delicious cheese in cents.
    * @ORM\Column(type="integer", nullable=true)
    * @Groups({"api_read","api_write"})
-   *
+   * @Assert\NotBlank()
+   * @Assert\GreaterThan(
+   *   value=0
+   * )
    */
   private $price;
 
