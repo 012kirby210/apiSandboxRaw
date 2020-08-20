@@ -2,17 +2,27 @@
 
 namespace App\Entity;
 
+use ApiPlatform\Core\Annotation\ApiFilter;
 use ApiPlatform\Core\Annotation\ApiResource;
+use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\BooleanFilter;
+use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\SearchFilter;
 use Symfony\Component\Serializer\Annotation\Groups;
+use Symfony\Component\Serializer\Annotation\SerializedName;
 use App\Repository\CheeseListingRepository;
 use Doctrine\ORM\Mapping as ORM;
 use Carbon\Carbon;
 
+
 /**
  * @ApiResource(
  *   normalizationContext={"groups"={"api_read"}},
- *   denormalizationContext={"groups"={"api_write"}}
+ *   denormalizationContext={"groups"={"api_write"}},
+ *   attributes={
+ *    "pagination_items_per_page"=1
+ *   }
  * )
+ * @ApiFilter(BooleanFilter::class, properties={"isPublished"})
+ * @ApiFilter(SearchFilter::class, properties={"title":"partial"}))
  * @ORM\Entity(repositoryClass=CheeseListingRepository::class)
  */
 class CheeseListing
@@ -52,6 +62,7 @@ class CheeseListing
   private $createdAt;
 
   /**
+   * Define if the ressource is published.
    * @ORM\Column(type="boolean")
    */
   private $isPublished = false;
@@ -84,11 +95,24 @@ class CheeseListing
   }
 
   /**
+   * Return a short description.
+   * @return string|null
+   *
+   * @Groups({"api_read"})
+   */
+  public function getShortDescription(): ?string
+  {
+    return (strlen($this->description) > 20)?
+      substr($this->description,0,20).'...' : $this->description;
+  }
+
+  /**
    * Transform a description into a line breaked description.
    * @param string|null $description
    * @return $this
    *
    * @Groups({"api_write"})
+   * @SerializedName("description")
    */
   public function setTextDescription(?string $description): self
   {
@@ -137,6 +161,12 @@ class CheeseListing
     return $this->isPublished;
   }
 
+  /**
+   * @param bool $isPublished
+   * @return $this
+   *
+   * @Groups({"api_write"})
+   */
   public function setIsPublished(bool $isPublished): self
   {
     $this->isPublished = $isPublished;
