@@ -18,7 +18,8 @@ use Carbon\Carbon;
  *   normalizationContext={"groups"={"api_read"}},
  *   denormalizationContext={"groups"={"api_write"}},
  *   attributes={
- *    "pagination_items_per_page"=1
+ *    "pagination_items_per_page"=1,
+ *    "formats"={"jsonld","json","html","jsonhal","csv"={"text/csv"}}
  *   }
  * )
  * @ApiFilter(BooleanFilter::class, properties={"isPublished"})
