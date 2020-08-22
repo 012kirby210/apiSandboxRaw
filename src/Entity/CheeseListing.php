@@ -21,7 +21,14 @@ use Carbon\Carbon;
  *   attributes={
  *    "pagination_items_per_page"=1,
  *    "formats"={"jsonld","json","html","jsonhal","csv"={"text/csv"}}
- *   }
+ *   },
+ *   itemOperations={
+ *    "get"={"normalization_context"={
+ *     "groups"={"CheeseListing:api_read","CheeseListing:api_write","CheeseListing:get:api_read"}
+ *    }},
+ *    "delete"={"denormalization_context"={"groups"={"CheeseListing:api_write"}}},
+ *    "put"={"denormalization_context"={"groups"={"CheeseListing:api_write","CheeseListing:put:api_write"}}}
+    }
  * )
  * @ApiFilter(BooleanFilter::class, properties={"isPublished"})
  * @ApiFilter(SearchFilter::class, properties={"title":"partial"}))
@@ -39,7 +46,7 @@ class CheeseListing
 
   /**
    * @ORM\Column(type="string", length=255)
-   * @Groups({"CheeseListing:api_read","CheeseListing:api_write"})
+   * @Groups({"CheeseListing:api_read","CheeseListing:api_write","User:api_read"})
    * @Assert\NotBlank()
    * @Assert\Length(
    *   min=2,
@@ -51,7 +58,7 @@ class CheeseListing
 
   /**
    * @ORM\Column(type="text", nullable=true)
-   * @Groups({"CheeseListing:api_read"})
+   * @Groups({"CheeseListing:api_read","User:api_read"})
    * @Assert\NotBlank()
    */
   private $description;
@@ -59,7 +66,7 @@ class CheeseListing
   /**
    * The price of this delicious cheese in cents.
    * @ORM\Column(type="integer", nullable=true)
-   * @Groups({"CheeseListing:api_read","CheeseListing:api_write"})
+   * @Groups({"CheeseListing:api_read","CheeseListing:api_write","User:api_read"})
    * @Assert\NotBlank()
    * @Assert\GreaterThan(
    *   value=0
@@ -82,7 +89,8 @@ class CheeseListing
   /**
    * @ORM\ManyToOne(targetEntity=User::class, inversedBy="cheeseListings")
    *
-   * @Groups({"CheeseListing:api_read","CheeseListing:api_write"})
+   * @Groups({"CheeseListing:api_read","CheeseListing:api_write","CheeseListing:put:api_write"})
+   * @Assert\Valid()
    */
   private $owner;
 

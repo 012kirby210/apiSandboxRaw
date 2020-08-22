@@ -59,7 +59,7 @@ class User implements UserInterface
     /**
      * @ORM\Column(type="string", length=255, nullable=true, unique=true)
      *
-     * @Groups({"User:api_read","User:api_write"})
+     * @Groups({"User:api_read","User:api_write","CheeseListing:get:api_read","CheeseListing:put:api_write"})
      * @Assert\NotBlank()
      */
     private $username;
