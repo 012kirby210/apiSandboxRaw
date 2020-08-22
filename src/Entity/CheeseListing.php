@@ -16,8 +16,8 @@ use Carbon\Carbon;
 
 /**
  * @ApiResource(
- *   normalizationContext={"groups"={"api_read"}},
- *   denormalizationContext={"groups"={"api_write"}},
+ *   normalizationContext={"groups"={"CheeseListing:api_read"}},
+ *   denormalizationContext={"groups"={"CheeseListing:api_write"}},
  *   attributes={
  *    "pagination_items_per_page"=1,
  *    "formats"={"jsonld","json","html","jsonhal","csv"={"text/csv"}}
@@ -33,13 +33,13 @@ class CheeseListing
    * @ORM\Id()
    * @ORM\GeneratedValue()
    * @ORM\Column(type="integer")
-   * @Groups({"api_read"})
+   * @Groups({"CheeseListing:api_read"})
    */
   private $id;
 
   /**
    * @ORM\Column(type="string", length=255)
-   * @Groups({"api_read","api_write"})
+   * @Groups({"CheeseListing:api_read","CheeseListing:api_write"})
    * @Assert\NotBlank()
    * @Assert\Length(
    *   min=2,
@@ -51,7 +51,7 @@ class CheeseListing
 
   /**
    * @ORM\Column(type="text", nullable=true)
-   * @Groups({"api_read"})
+   * @Groups({"CheeseListing:api_read"})
    * @Assert\NotBlank()
    */
   private $description;
@@ -59,7 +59,7 @@ class CheeseListing
   /**
    * The price of this delicious cheese in cents.
    * @ORM\Column(type="integer", nullable=true)
-   * @Groups({"api_read","api_write"})
+   * @Groups({"CheeseListing:api_read","CheeseListing:api_write"})
    * @Assert\NotBlank()
    * @Assert\GreaterThan(
    *   value=0
@@ -69,7 +69,7 @@ class CheeseListing
 
   /**
    * @ORM\Column(type="datetime")
-   * @Groups({"api_read"})
+   * @Groups({"CheeseListing:api_read"})
    */
   private $createdAt;
 
@@ -81,6 +81,8 @@ class CheeseListing
 
   /**
    * @ORM\ManyToOne(targetEntity=User::class, inversedBy="cheeseListings")
+   *
+   * @Groups({"CheeseListing:api_read","CheeseListing:api_write"})
    */
   private $owner;
 
@@ -115,7 +117,7 @@ class CheeseListing
    * Return a short description.
    * @return string|null
    *
-   * @Groups({"api_read"})
+   * @Groups({"CheeseListing:api_read"})
    */
   public function getShortDescription(): ?string
   {
@@ -128,7 +130,7 @@ class CheeseListing
    * @param string|null $description
    * @return $this
    *
-   * @Groups({"api_write"})
+   * @Groups({"CheeseListing:api_write"})
    * @SerializedName("description")
    */
   public function setTextDescription(?string $description): self
@@ -166,7 +168,7 @@ class CheeseListing
    * Get the time diff relative to now as a human understandable string.
    * @return string|null
    *
-   * @Groups({"api_read"})
+   * @Groups({"CheeseListing:api_read"})
    */
   public function getCreatedAtAgo(): ?string
   {
@@ -182,7 +184,7 @@ class CheeseListing
    * @param bool $isPublished
    * @return $this
    *
-   * @Groups({"api_write"})
+   * @Groups({"CheeseListing:api_write"})
    */
   public function setIsPublished(bool $isPublished): self
   {

@@ -15,8 +15,8 @@ use Symfony\Component\Validator\Constraints as Assert;
 /**
  * @ORM\Entity(repositoryClass=UserRepository::class)
  * @ApiResource(
- *   normalizationContext={"groups"={"api_read"}},
- *   denormalizationContext={"groups"={"api_write"}}
+ *   normalizationContext={"groups"={"User:api_read"}},
+ *   denormalizationContext={"groups"={"User:api_write"}}
  *   )
  * @UniqueEntity(fields={"username"})
  * @UniqueEntity(fields={"email"})
@@ -28,14 +28,14 @@ class User implements UserInterface
      * @ORM\GeneratedValue()
      * @ORM\Column(type="integer")
      *
-     * @Groups({"api_read"})
+     * @Groups({"User:api_read"})
      */
     private $id;
 
     /**
      * @ORM\Column(type="string", length=180, unique=true)
      *
-     * @Groups({"api_read","api_write"})
+     * @Groups({"User:api_read","User:api_write"})
      * @Assert\NotBlank()
      * @Assert\Email()
      */
@@ -44,7 +44,7 @@ class User implements UserInterface
     /**
      * @ORM\Column(type="json")
      *
-     * @Groups({"api_read","api_write"})
+     * @Groups({"User:api_read","User:api_write"})
      */
     private $roles = [];
 
@@ -52,14 +52,14 @@ class User implements UserInterface
      * @var string The hashed password
      * @ORM\Column(type="string")
      *
-     * @Groups({"api_write"})
+     * @Groups({"User:api_write"})
      */
     private $password;
 
     /**
      * @ORM\Column(type="string", length=255, nullable=true, unique=true)
      *
-     * @Groups({"api_read","api_write"})
+     * @Groups({"User:api_read","User:api_write"})
      * @Assert\NotBlank()
      */
     private $username;
@@ -67,7 +67,7 @@ class User implements UserInterface
     /**
      * @ORM\OneToMany(targetEntity=CheeseListing::class, mappedBy="owner")
      *
-     * @Groups({"api_read","api_write"})
+     * @Groups({"User:api_read","User:api_write"})
      */
     private $cheeseListings;
 
