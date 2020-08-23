@@ -31,7 +31,11 @@ use Carbon\Carbon;
     }
  * )
  * @ApiFilter(BooleanFilter::class, properties={"isPublished"})
- * @ApiFilter(SearchFilter::class, properties={"title":"partial"}))
+ * @ApiFilter(SearchFilter::class, properties=
+ *   {"title":"partial",
+ *    "description":"partial",
+ *    "owner":"exact",
+ *    "owner.username":"partial"}))
  * @ORM\Entity(repositoryClass=CheeseListingRepository::class)
  */
 class CheeseListing
@@ -46,7 +50,7 @@ class CheeseListing
 
   /**
    * @ORM\Column(type="string", length=255)
-   * @Groups({"CheeseListing:api_read","CheeseListing:api_write","User:api_read"})
+   * @Groups({"CheeseListing:api_read","CheeseListing:api_write","User:api_read","User:api_write"})
    * @Assert\NotBlank()
    * @Assert\Length(
    *   min=2,
@@ -66,7 +70,7 @@ class CheeseListing
   /**
    * The price of this delicious cheese in cents.
    * @ORM\Column(type="integer", nullable=true)
-   * @Groups({"CheeseListing:api_read","CheeseListing:api_write","User:api_read"})
+   * @Groups({"CheeseListing:api_read","CheeseListing:api_write","User:api_read","User:api_write"})
    * @Assert\NotBlank()
    * @Assert\GreaterThan(
    *   value=0
@@ -138,7 +142,7 @@ class CheeseListing
    * @param string|null $description
    * @return $this
    *
-   * @Groups({"CheeseListing:api_write"})
+   * @Groups({"CheeseListing:api_write","User:api_write"})
    * @SerializedName("description")
    */
   public function setTextDescription(?string $description): self

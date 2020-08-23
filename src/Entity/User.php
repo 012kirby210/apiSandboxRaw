@@ -2,6 +2,8 @@
 
 namespace App\Entity;
 
+use ApiPlatform\Core\Annotation\ApiFilter;
+use ApiPlatform\Core\Annotation\ApiSubresource;
 use App\Repository\UserRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
@@ -11,6 +13,7 @@ use ApiPlatform\Core\Annotation\ApiResource;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Validator\Constraints as Assert;
+use ApiPlatform\Core\Serializer\Filter\PropertyFilter;
 
 /**
  * @ORM\Entity(repositoryClass=UserRepository::class)
@@ -20,6 +23,7 @@ use Symfony\Component\Validator\Constraints as Assert;
  *   )
  * @UniqueEntity(fields={"username"})
  * @UniqueEntity(fields={"email"})
+ * @ApiFilter(PropertyFilter::class)
  */
 class User implements UserInterface
 {
@@ -59,15 +63,17 @@ class User implements UserInterface
     /**
      * @ORM\Column(type="string", length=255, nullable=true, unique=true)
      *
-     * @Groups({"User:api_read","User:api_write","CheeseListing:get:api_read","CheeseListing:put:api_write"})
+     * @Groups({"User:api_read","User:api_write","CheeseListing:api_read","CheeseListing:get:api_read","CheeseListing:put:api_write"})
      * @Assert\NotBlank()
      */
     private $username;
 
     /**
-     * @ORM\OneToMany(targetEntity=CheeseListing::class, mappedBy="owner")
+     * @ORM\OneToMany(targetEntity=CheeseListing::class, mappedBy="owner", cascade={"persist"})
      *
      * @Groups({"User:api_read","User:api_write"})
+     * @ApiSubresource()
+     * @Assert\Valid()
      */
     private $cheeseListings;
 
