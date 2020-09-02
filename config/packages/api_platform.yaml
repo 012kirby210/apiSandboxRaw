@@ -18,3 +18,5 @@ api_platform:
         jsonhal:
             mime_types:
                 - application/hal+json
+    enable_docs: false
+    enable_entrypoint: false
