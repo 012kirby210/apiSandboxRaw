@@ -26,9 +26,17 @@ use Carbon\Carbon;
  *    "get"={"normalization_context"={
  *     "groups"={"CheeseListing:api_read","CheeseListing:api_write","CheeseListing:get:api_read"}
  *    }},
- *    "delete"={"denormalization_context"={"groups"={"CheeseListing:api_write"}}},
- *    "put"={"denormalization_context"={"groups"={"CheeseListing:api_write","CheeseListing:put:api_write"}}}
-    }
+ *    "delete"={"denormalization_context"={"groups"={"CheeseListing:api_write"}},
+ *     "security"="is_granted('ROLE_ADMIN')"
+ *    },
+ *    "put"={"denormalization_context"={"groups"={"CheeseListing:api_write","CheeseListing:put:api_write"}},
+ *     "security"="is_granted('ROLE_USER')"
+ *    }
+ *   },
+ *   collectionOperations={
+ *    "get",
+ *    "post"={"security"="is_granted('ROLE_USER')"}
+ *   }
  * )
  * @ApiFilter(BooleanFilter::class, properties={"isPublished"})
  * @ApiFilter(SearchFilter::class, properties=
