@@ -24,3 +24,18 @@
 npm-debug.log
 yarn-error.log
 ###< symfony/webpack-encore-bundle ###
+/config/packages/prod/deprecations.yaml
+/config/packages/dev/hautelook_alice.yaml
+/config/packages/test/hautelook_alice.yaml
+/config/packages/dev/monolog.yaml
+/config/packages/prod/monolog.yaml
+/config/packages/test/monolog.yaml
+/config/packages/dev/nelmio_alice.yaml
+/config/packages/test/nelmio_alice.yaml
+/bin/phpunit
+/phpunit.xml.dist
+/.env.test
+/fixtures/.gitignore
+/migrations/.gitignore
+/translations/.gitignore
+/.php-version

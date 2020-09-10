@@ -3,13 +3,16 @@
 
 namespace App\Tests\functionnal;
 
+use Doctrine\ORM\EntityManager;
 use ApiPlatform\Core\Bridge\Symfony\Bundle\Test\ApiTestCase;
 use App\Entity\User;
 use App\Repository\UserRepository;
+use App\Entity\CheeseListing;
 use Hautelook\AliceBundle\PhpUnit\ReloadDatabaseTrait;
+use App\Tests\BaseClasses\UserFriendlyTestCase;
 
 
-class CheeseListingRessourceTest extends ApiTestCase
+class CheeseListingRessourceTest extends UserFriendlyTestCase
 {
 
   use ReloadDatabaseTrait;
@@ -39,33 +42,64 @@ class CheeseListingRessourceTest extends ApiTestCase
     $this->assertResponseStatusCodeSame(401);
   }
 
-  public function testAnAuthenticatedUserShouldBeAbleToCreateCheeseListing()
+  public function testAnAuthenticatedUserShouldBeAbleToCheeseListing()
   {
-    // the client will boot the kernel :
     $client = self::createClient();
-    $this->createTheTestUser();
-    $this->loginAsTheTestUser($client);
+    $this->createUser($client,'testuser@mail.com','azerty');
+    $this->loginAsUser($client,'testuser@mail.com','azerty');
   }
 
-  private function createTheTestUser()
+  public function testAnOwnerOfACheeseListingShouldBeAbleToUpdateACheeselisting()
   {
-    $user = new User();
-    $user->setEmail($this->testUserEmail);
-    $user->setPassword($this->testUserPasswordEncoded);
-    $user->setUsername($this->testUserName);
-    $entityManager = self::$container->get('doctrine')->getManager();
-    $entityManager->persist($user);
+    $client = self::createClient();
+    $user = $this->createUser($client,'testuser@mail.com','azerty');
+
+    $cheeseListing = new CheeseListing();
+    $cheeseListing->setOwner($user);
+    $cheeseListing->setTitle('A block of cheddar');
+    $cheeseListing->setDescription('awesome');
+    $cheeseListing->setPrice(1000);
+    $entityManager = self::$container->get('doctrine.orm.default_entity_manager');
+    $entityManager->persist($cheeseListing);
     $entityManager->flush();
-  }
 
-  private function loginAsTheTestUser($client)
-  {
-    // dont remake another kernel or the trait will move out what the last kernel did
-    $client->request('POST','/login',[
+    $this->loginAsUser($client,'testuser@mail.com','azerty');
+    $client->request('PUT','/api/cheese_listings/'.$cheeseListing->getId(),
+    [
       'headers' => [ 'accept' => ['application/json'],
         'Content-type' => ['application/json']],
-      'json' => ['email' => $this->testUserEmail, 'password' => $this->testUserPassword]
+      'json' => [
+        'title' => 'updated'
+      ]
     ]);
-    $this->assertResponseStatusCodeSame(204);
+    $this->assertResponseStatusCodeSame(200);
   }
+
+  public function testNoOwnerShouldBeAbleToUpdateACheeseListing()
+  {
+    $client = self::createClient();
+    $user = $this->createUser($client,'testuser@mail.com','azerty');
+    $userTrying = $this->createUser($client,'testusertrying@mail.com','azerty');
+
+    $cheeseListing = new CheeseListing();
+    $cheeseListing->setOwner($user);
+    $cheeseListing->setTitle('A block of cheddar');
+    $cheeseListing->setDescription('awesome');
+    $cheeseListing->setPrice(1000);
+    $entityManager = self::$container->get('doctrine.orm.default_entity_manager');
+    $entityManager->persist($cheeseListing);
+    $entityManager->flush();
+
+    $this->loginAsUser($client,'testusertrying@mail.com','azerty');
+    $client->request('PUT','/api/cheese_listings/'.$cheeseListing->getId(),
+      [
+        'headers' => [ 'accept' => ['application/json'],
+          'Content-type' => ['application/json']],
+        'json' => [
+          'title' => 'updated'
+        ]
+      ]);
+    $this->assertResponseStatusCodeSame(403);
+  }
+
 }
