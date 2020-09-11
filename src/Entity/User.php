@@ -19,7 +19,16 @@ use ApiPlatform\Core\Serializer\Filter\PropertyFilter;
  * @ORM\Entity(repositoryClass=UserRepository::class)
  * @ApiResource(
  *   normalizationContext={"groups"={"User:api_read"}},
- *   denormalizationContext={"groups"={"User:api_write"}}
+ *   denormalizationContext={"groups"={"User:api_write"}},
+ *   collectionOperations={
+ *    "get",
+ *    "post"={"method"="POST","security"="is_granted('IS_AUTHENTICATED_ANONYMOUSLY')"}
+ *   },
+ *   itemOperations={
+ *    "get"={"security"="is_granted('ROLE_USER')"},
+ *    "put"={"security"="is_granted('ROLE_USER') and object == user"},
+ *    "delete"={"security"="is_granted('ROLE_ADMIN')"}
+ *   }
  *   )
  * @UniqueEntity(fields={"username"})
  * @UniqueEntity(fields={"email"})

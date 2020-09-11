@@ -30,7 +30,7 @@ use Carbon\Carbon;
  *     "security"="is_granted('ROLE_ADMIN')"
  *    },
  *    "put"={"denormalization_context"={"groups"={"CheeseListing:api_write","CheeseListing:put:api_write"}},
- *     "security"="is_granted('ROLE_USER') and object.getOwner() == user"
+ *     "security"="is_granted('EDIT',object)"
  *    }
  *   },
  *   collectionOperations={

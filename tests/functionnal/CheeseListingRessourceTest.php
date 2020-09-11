@@ -102,4 +102,83 @@ class CheeseListingRessourceTest extends UserFriendlyTestCase
     $this->assertResponseStatusCodeSame(403);
   }
 
+  public function testNoOwnerShouldChangeTheOwnerOfACheeseListingButIts()
+  {
+    $client = self::createClient();
+    $user = $this->createUser($client,'testuser@mail.com','azerty');
+    $userTrying = $this->createUser($client,'testusertrying@mail.com','azerty');
+
+    $cheeseListing = new CheeseListing();
+    $cheeseListing->setOwner($user);
+    $cheeseListing->setTitle('A block of cheddar');
+    $cheeseListing->setDescription('awesome');
+    $cheeseListing->setPrice(1000);
+    $entityManager = self::$container->get('doctrine.orm.default_entity_manager');
+    $entityManager->persist($cheeseListing);
+    $entityManager->flush();
+
+    $this->loginAsUser($client,'testusertrying@mail.com','azerty');
+    $client->request('PUT','/api/cheese_listings/'.$cheeseListing->getId(),
+      [
+        'headers' => [ 'accept' => ['application/json'],
+          'Content-type' => ['application/json']],
+        'json' => [
+          'title' => 'updated',
+          'owner' => '/api/users/'.$userTrying->getId()
+        ]
+      ]);
+    $this->assertResponseStatusCodeSame(403);
+  }
+
+  public function testAnyOwnerOfACheeseListingShouldBeAbleToGiveOwnershipToAnotherUser()
+  {
+    $client = self::createClient();
+    $firstOwner = $this->createUser($client,'firstowner@mail.com','azerty');
+    $newOwner = $this->createUser($client,'newOwner@mail.com','azerty');
+
+    $cheeseListing = new CheeseListing();
+    $cheeseListing->setOwner($firstOwner);
+    $cheeseListing->setTitle('A block of cheddar');
+    $cheeseListing->setDescription('awesome');
+    $cheeseListing->setPrice(1000);
+    $entityManager = self::$container->get('doctrine.orm.default_entity_manager');
+    $entityManager->persist($cheeseListing);
+    $entityManager->flush();
+
+    $this->loginAsUser($client,'firstowner@mail.com','azerty');
+    // change ownership
+    $client->request('PUT','/api/cheese_listings/'.$cheeseListing->getId(),
+      [
+        'headers' => [ 'accept' => ['application/json'],
+          'Content-type' => ['application/json']],
+        'json' => [
+          'title' => 'updated',
+          'owner' => '/api/users/'.$newOwner->getId()
+        ]
+      ]);
+    $this->assertResponseStatusCodeSame(200);
+    // try to re-access
+    $client->request('PUT','/api/cheese_listings/'.$cheeseListing->getId(),
+      [
+        'headers' => [ 'accept' => ['application/json'],
+          'Content-type' => ['application/json']],
+        'json' => [
+          'title' => 'updated',
+          'owner' => '/api/users/'.$newOwner->getId()
+        ]
+      ]);
+    $this->assertResponseStatusCodeSame(403);
+
+    $this->loginAsUser($client,'newOwner@mail.com','azerty');
+    $client->request('PUT','/api/cheese_listings/'.$cheeseListing->getId(),
+      [
+        'headers' => [ 'accept' => ['application/json'],
+          'Content-type' => ['application/json']],
+        'json' => [
+          'title' => 'changed ownership title'
+        ]
+      ]);
+    $this->assertResponseStatusCodeSame(200);
+  }
+
 }

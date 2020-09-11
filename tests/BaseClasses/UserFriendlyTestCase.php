@@ -10,7 +10,8 @@ use App\Entity\User;
 class UserFriendlyTestCase extends ApiTestCase
 {
 
-  public function createUser(?Client $client,?string $email,?string $password) :User
+  public function createUser(?Client $client,?string $email,?string $password,
+                             ?array $roles = []) :User
   {
     $user = new User();
     $userName = strstr($email,'@', true);
@@ -19,6 +20,8 @@ class UserFriendlyTestCase extends ApiTestCase
     $user->setEmail($email);
     $user->setPassword($password);
     $user->setUsername($userName);
+    !empty($roles) && array_push($roles,'ROLE_USER');
+    !empty($roles) && $user->setRoles($roles);
     $entityManager->persist($user);
     $entityManager->flush();
     return $user;
