@@ -12,6 +12,7 @@ use Symfony\Component\Security\Core\User\UserInterface;
 use ApiPlatform\Core\Annotation\ApiResource;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
+use Symfony\Component\Serializer\Annotation\SerializedName;
 use Symfony\Component\Validator\Constraints as Assert;
 use ApiPlatform\Core\Serializer\Filter\PropertyFilter;
 
@@ -65,9 +66,16 @@ class User implements UserInterface
      * @var string The hashed password
      * @ORM\Column(type="string")
      *
-     * @Groups({"User:api_write"})
      */
     private $password;
+
+    /**
+     * Won't be persisted, but transfered
+     * @Groups({"User:api_write"})
+     * @SerializedName("password")
+     * @var string
+     */
+    private $plainPassword;
 
     /**
      * @ORM\Column(type="string", length=255, nullable=true, unique=true)
@@ -75,6 +83,8 @@ class User implements UserInterface
      * @Groups({"User:api_read","User:api_write","CheeseListing:api_read","CheeseListing:get:api_read","CheeseListing:put:api_write"})
      * @Assert\NotBlank()
      */
+
+
     private $username;
 
     /**
@@ -166,7 +176,7 @@ class User implements UserInterface
     public function eraseCredentials()
     {
         // If you store any temporary, sensitive data on the user, clear it here
-        // $this->plainPassword = null;
+        $this->setPlainPassword(null);
     }
 
     public function setUsername(?string $username): self
@@ -206,4 +216,24 @@ class User implements UserInterface
 
         return $this;
     }
+
+    /**
+     * @return string
+     */
+    public function getPlainPassword(): ?string
+    {
+      return $this->plainPassword;
+    }
+
+    /**
+     * @param string $plainPassword
+     * @return User
+     */
+    public function setPlainPassword(?string $plainPassword): self
+    {
+      $this->plainPassword = $plainPassword;
+      return $this;
+    }
+
+
 }

@@ -12,6 +12,9 @@ class UserRessourceTest extends UserFriendlyTestCase
 
   use ReloadDatabaseTrait;
 
+  public $goodHeaders = [ 'accept' => ['application/json'],
+    'content-type' => ['application/json']];
+
   public function testAnUnauthenticatedUserShouldNotBeAbleToAccessAnyUserInformation()
   {
     $client = self::createClient();
@@ -105,5 +108,32 @@ class UserRessourceTest extends UserFriendlyTestCase
         'json' => [ 'username' => 'autreUsername']
       ]
     );
+  }
+
+  public function testTheCreationOfAnUserShouldBePossible()
+  {
+    $client = self::createClient();
+    $client->request('POST','/api/users',
+    [
+      'headers' => $this->goodHeaders,
+      'json' => [
+        'email' => 'usermail@mail.com',
+        'username' => 'username',
+        'password' => 'password'
+      ]
+    ]);
+
+    $this->assertResponseStatusCodeSame(201);
+
+    $client->request('POST','/login',
+    [
+      'headers' => $this->goodHeaders,
+      'json' => [
+        'email' => 'usermail@mail.com',
+        'password' => 'password'
+      ]
+    ]);
+
+    $this->assertResponseStatusCodeSame(204);
   }
 }
