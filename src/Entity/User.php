@@ -23,7 +23,10 @@ use ApiPlatform\Core\Serializer\Filter\PropertyFilter;
  *   denormalizationContext={"groups"={"User:api_write"}},
  *   collectionOperations={
  *    "get",
- *    "post"={"method"="POST","security"="is_granted('IS_AUTHENTICATED_ANONYMOUSLY')"}
+ *    "post"={
+ *     "method"="POST",
+ *     "security"="is_granted('IS_AUTHENTICATED_ANONYMOUSLY')",
+ *     "validation_groups"={"Default","create"}}
  *   },
  *   itemOperations={
  *    "get"={"security"="is_granted('ROLE_USER')"},
@@ -58,7 +61,7 @@ class User implements UserInterface
     /**
      * @ORM\Column(type="json")
      *
-     * @Groups({"User:api_read","User:api_write"})
+     * @Groups({"admin:api_write"})
      */
     private $roles = [];
 
@@ -73,6 +76,7 @@ class User implements UserInterface
      * Won't be persisted, but transfered
      * @Groups({"User:api_write"})
      * @SerializedName("password")
+     * @Assert\NotBlank(groups={"create"})
      * @var string
      */
     private $plainPassword;
@@ -95,6 +99,12 @@ class User implements UserInterface
      * @Assert\Valid()
      */
     private $cheeseListings;
+
+    /**
+     * @ORM\Column(type="string", length=50, nullable=true)
+     * @Groups({"admin:api_read","User:api_write"})
+     */
+    private $phoneNumber;
 
     public function __construct()
     {
@@ -233,6 +243,18 @@ class User implements UserInterface
     {
       $this->plainPassword = $plainPassword;
       return $this;
+    }
+
+    public function getPhoneNumber(): ?string
+    {
+        return $this->phoneNumber;
+    }
+
+    public function setPhoneNumber(?string $phoneNumber): self
+    {
+        $this->phoneNumber = $phoneNumber;
+
+        return $this;
     }
 
 

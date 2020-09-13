@@ -43,7 +43,7 @@ class UserDataPersister implements DataPersisterInterface
     $user = $data;
     $userPlainPassword = $user->getPlainPassword();
 
-    if ($userPlainPassword !== ''){
+    if ($userPlainPassword && $userPlainPassword !== ''){
       $user->setPassword(
         $this->passwordEncoder->encodePassword($user,$userPlainPassword));
       $user->eraseCredentials();
