@@ -19,8 +19,7 @@ use ApiPlatform\Core\Serializer\Filter\PropertyFilter;
 /**
  * @ORM\Entity(repositoryClass=UserRepository::class)
  * @ApiResource(
- *   normalizationContext={"groups"={"User:api_read"}},
- *   denormalizationContext={"groups"={"User:api_write"}},
+ *
  *   collectionOperations={
  *    "get",
  *    "post"={
@@ -45,14 +44,14 @@ class User implements UserInterface
      * @ORM\GeneratedValue()
      * @ORM\Column(type="integer")
      *
-     * @Groups({"User:api_read"})
+     * @Groups({"user:read"})
      */
     private $id;
 
     /**
      * @ORM\Column(type="string", length=180, unique=true)
      *
-     * @Groups({"User:api_read","User:api_write"})
+     * @Groups({"user:read","user:write"})
      * @Assert\NotBlank()
      * @Assert\Email()
      */
@@ -61,7 +60,7 @@ class User implements UserInterface
     /**
      * @ORM\Column(type="json")
      *
-     * @Groups({"admin:api_write"})
+     * @Groups({"admin:write"})
      */
     private $roles = [];
 
@@ -74,7 +73,7 @@ class User implements UserInterface
 
     /**
      * Won't be persisted, but transfered
-     * @Groups({"User:api_write"})
+     * @Groups({"user:write"})
      * @SerializedName("password")
      * @Assert\NotBlank(groups={"create"})
      * @var string
@@ -84,7 +83,7 @@ class User implements UserInterface
     /**
      * @ORM\Column(type="string", length=255, nullable=true, unique=true)
      *
-     * @Groups({"User:api_read","User:api_write","CheeseListing:api_read","CheeseListing:get:api_read","CheeseListing:put:api_write"})
+     * @Groups({"user:read","user:write","cheese_listing:read","cheese_listing:item:get","cheese_listing:item:put"})
      * @Assert\NotBlank()
      */
 
@@ -94,7 +93,7 @@ class User implements UserInterface
     /**
      * @ORM\OneToMany(targetEntity=CheeseListing::class, mappedBy="owner", cascade={"persist"})
      *
-     * @Groups({"User:api_read","User:api_write"})
+     * @Groups({"user:read","user:write"})
      * @ApiSubresource()
      * @Assert\Valid()
      */
@@ -102,7 +101,7 @@ class User implements UserInterface
 
     /**
      * @ORM\Column(type="string", length=50, nullable=true)
-     * @Groups({"admin:api_read","User:api_write"})
+     * @Groups({"admin:read","user:write"})
      */
     private $phoneNumber;
 
