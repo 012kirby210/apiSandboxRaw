@@ -70,7 +70,6 @@ class AdminGroupsContextBuilder implements SerializerContextBuilderInterface
         sprintf('%s:%s:%s', $classAlias, $setType, $operationType),
         sprintf('%s:%s:%s', $classAlias, $setType, $operationName)
       ];
-
     }
   }
 }

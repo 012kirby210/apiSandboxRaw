@@ -33,3 +33,8 @@ services:
     App\Serializer\AdminGroupsContextBuilder:
         decorates: 'api_platform.serializer.context_builder'
         arguments: [ '@App\Serializer\AdminGroupsContextBuilder.inner','@security.authorization_checker']
+
+    App\ApiPlatform\AutoGroupResourceMetadataFactory:
+        decorates: 'api_platform.metadata.resource.metadata_factory'
+        arguments: ['@App\ApiPlatform\AutoGroupResourceMetadataFactory.inner','@monolog.logger.console']
+
