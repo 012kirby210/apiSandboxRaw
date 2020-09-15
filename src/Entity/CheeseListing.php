@@ -16,6 +16,7 @@ use Carbon\Carbon;
 
 /**
  * @ApiResource(
+ *   shortName="cheese_listing",
  *   attributes={
  *    "pagination_items_per_page"=1,
  *    "formats"={"jsonld","json","html","jsonhal","csv"={"text/csv"}}

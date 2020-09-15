@@ -37,4 +37,7 @@ services:
     App\ApiPlatform\AutoGroupResourceMetadataFactory:
         decorates: 'api_platform.metadata.resource.metadata_factory'
         arguments: ['@App\ApiPlatform\AutoGroupResourceMetadataFactory.inner','@monolog.logger.console']
+        decoration_priority: -20
+
+
 
