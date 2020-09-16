@@ -3,18 +3,18 @@
 namespace App\Serializer\Normalizer;
 
 use Symfony\Component\Serializer\Normalizer\CacheableSupportsMethodInterface;
+use Symfony\Component\Serializer\Normalizer\ContextAwareNormalizerInterface;
+use Symfony\Component\Serializer\Normalizer\NormalizerAwareInterface;
+use Symfony\Component\Serializer\Normalizer\NormalizerAwareTrait;
 use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
 use Symfony\Component\Serializer\Normalizer\ObjectNormalizer;
 use App\Entity\User;
 
-class UserNormalizer implements NormalizerInterface, CacheableSupportsMethodInterface
+class UserNormalizer implements ContextAwareNormalizerInterface, CacheableSupportsMethodInterface, NormalizerAwareInterface
 {
-    private $normalizer;
+    use NormalizerAwareTrait;
 
-    public function __construct(ObjectNormalizer $normalizer)
-    {
-        $this->normalizer = $normalizer;
-    }
+    private const ALREADY_CALLED = 'USER_NORMALIZER_ALREADY_CALLED';
 
   /**
    * That normalizer will only be called on user type of object due to supports function.
@@ -27,7 +27,11 @@ class UserNormalizer implements NormalizerInterface, CacheableSupportsMethodInte
     public function normalize($object, $format = null, array $context = array()): array
     {
         if ($this->userIsOwner($object)){
-          isset($context['groups']) && $context['groups'][] = 'owner:read';
+          if (isset($context['groups'])){
+						$context['groups'][] = 'owner:read';
+						$context[self::ALREADY_CALLED] = true;
+          }
+
         }
 
       $data = $this->normalizer->normalize($object, $format, $context);
@@ -41,16 +45,19 @@ class UserNormalizer implements NormalizerInterface, CacheableSupportsMethodInte
    * Will that normalizer enter the normization chain for the what kind of object ?
    * @param mixed $data
    * @param string | null $format
+	 * @param array $context
    * @return bool
    */
-    public function supportsNormalization($data, $format = null): bool
-    {
-        return $data instanceof User;
-    }
+	public function supportsNormalization($data, string $format = null, array $context = [])
+	{
+		$alreadyCalled = isset($context[self::ALREADY_CALLED]) ? $context[self::ALREADY_CALLED] : false;
+		return ($alreadyCalled) && ($data instanceof User);
+	}
+
 
     public function hasCacheableSupportsMethod(): bool
     {
-        return true;
+        return false;
     }
 
     private function userIsOwner(User $user): bool
@@ -61,4 +68,6 @@ class UserNormalizer implements NormalizerInterface, CacheableSupportsMethodInte
 
       return $returnedValue;
     }
+
+
 }
