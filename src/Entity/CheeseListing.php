@@ -98,8 +98,7 @@ class CheeseListing
   /**
    * @ORM\ManyToOne(targetEntity=User::class, inversedBy="cheeseListings")
    *
-   * @Groups({"cheese_listing:read","cheese_listing:write","cheese_listing:item:write"})
-   * @Assert\Valid()
+   * @Groups({"cheese_listing:read","cheese_listing:collection:post"})
    */
   private $owner;
 

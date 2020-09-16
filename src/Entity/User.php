@@ -83,7 +83,7 @@ class User implements UserInterface
     /**
      * @ORM\Column(type="string", length=255, nullable=true, unique=true)
      *
-     * @Groups({"user:read","user:write","cheese_listing:read","cheese_listing:item:get","cheese_listing:item:put"})
+     * @Groups({"user:read","user:write","cheese_listing:read","cheese_listing:item:get"})
      * @Assert\NotBlank()
      */
 

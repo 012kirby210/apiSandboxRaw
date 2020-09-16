@@ -39,5 +39,8 @@ services:
         arguments: ['@App\ApiPlatform\AutoGroupResourceMetadataFactory.inner','@monolog.logger.console']
         decoration_priority: -20
 
+    App\Serializer\Normalizer\UserNormalizer:
+        arguments: ['@security.helper']
+
 
 

@@ -2,6 +2,7 @@
 
 namespace App\Serializer\Normalizer;
 
+use Symfony\Component\Security\Core\Security;
 use Symfony\Component\Serializer\Normalizer\CacheableSupportsMethodInterface;
 use Symfony\Component\Serializer\Normalizer\ContextAwareNormalizerInterface;
 use Symfony\Component\Serializer\Normalizer\NormalizerAwareInterface;
@@ -15,6 +16,12 @@ class UserNormalizer implements ContextAwareNormalizerInterface, CacheableSuppor
     use NormalizerAwareTrait;
 
     private const ALREADY_CALLED = 'USER_NORMALIZER_ALREADY_CALLED';
+		private $security;
+
+    public function __construct(Security $security)
+		{
+			$this->security = $security;
+		}
 
   /**
    * That normalizer will only be called on user type of object due to supports function.
@@ -26,16 +33,18 @@ class UserNormalizer implements ContextAwareNormalizerInterface, CacheableSuppor
    */
     public function normalize($object, $format = null, array $context = array()): array
     {
-        if ($this->userIsOwner($object)){
+    	$isOwner = $this->userIsOwner($object);
+
+        if ($isOwner){
           if (isset($context['groups'])){
 						$context['groups'][] = 'owner:read';
-						$context[self::ALREADY_CALLED] = true;
           }
-
         }
+        // the process of normalization will occur on each User normalized
+				$context[self::ALREADY_CALLED] = true;
 
       $data = $this->normalizer->normalize($object, $format, $context);
-
+			$data['isMe'] = $isOwner;
         // Here: add, edit, or delete some data
 
         return $data;
@@ -51,7 +60,7 @@ class UserNormalizer implements ContextAwareNormalizerInterface, CacheableSuppor
 	public function supportsNormalization($data, string $format = null, array $context = [])
 	{
 		$alreadyCalled = isset($context[self::ALREADY_CALLED]) ? $context[self::ALREADY_CALLED] : false;
-		return ($alreadyCalled) && ($data instanceof User);
+		return ($data instanceof User) && !$alreadyCalled;
 	}
 
 
@@ -62,11 +71,14 @@ class UserNormalizer implements ContextAwareNormalizerInterface, CacheableSuppor
 
     private function userIsOwner(User $user): bool
     {
-      $random = mt_rand(0,10);
-      $returnedValue = $random > 5;
-      error_log("random value {$random}, returned Value : {$returnedValue}" );
-
-      return $returnedValue;
+    	/** @var User $authenticatedUser */
+    	$authenticatedUser = $this->security->getUser();
+    	$returnedValue = false;
+    	if ($authenticatedUser !== null)
+			{
+				$returnedValue = $authenticatedUser->getEmail() === $user->getEmail();
+			}
+    	return $returnedValue;
     }
 
 

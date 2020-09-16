@@ -143,16 +143,18 @@ class UserRessourceTest extends UserFriendlyTestCase
     $this->assertResponseStatusCodeSame(204);
   }
 
-  public function testThePhoneNumberShouldNotAppearInTheResultOfTheResearch()
+  public function testThePhoneNumberShouldNotAppearInTheResultOfTheResearchOfAnotherUser()
   {
     $client = self::createClient();
     $user = $this->createUser($client,'username@mail.com','password');
     $user->setPhoneNumber('065414584966');
+    $user2 = $this->createUser($client,'username2@mail.com','password');
     $em = self::$container->get('doctrine.orm.entity_manager');
     $em->persist($user);
+    $em->persist($user2);
     $em->flush();
 
-    $this->loginAsUser($client,'username@mail.com','password');
+    $this->loginAsUser($client,'username2@mail.com','password');
     $responseInterface = $client->request('GET','/api/users/'.$user->getId(),
     [
       'headers' => $this->goodHeaders

@@ -10,12 +10,18 @@ use App\Repository\UserRepository;
 use App\Entity\CheeseListing;
 use Hautelook\AliceBundle\PhpUnit\ReloadDatabaseTrait;
 use App\Tests\BaseClasses\UserFriendlyTestCase;
+use Symfony\Component\HttpClient\Exception\JsonException;
+use Symfony\Component\HttpClient\Exception\TransportException;
+use Symfony\Contracts\HttpClient\ResponseInterface;
 
 
 class CheeseListingRessourceTest extends UserFriendlyTestCase
 {
 
   use ReloadDatabaseTrait;
+
+  private $goodHeaders = [ 'accept' => ['application/json'],
+          'Content-type' => ['application/json']];
 
   private $testUserEmail = 'testUser1@mail.com';
   private $testUserPasswordEncoded = '$argon2id$v=19$m=65536,t=4,p=1$YSHoMb8usYjsF6cjNB+HzA$juuLpWzuEjty1cuvvkMwEEpFKffSan75Cgh04/R5t54';
@@ -180,5 +186,71 @@ class CheeseListingRessourceTest extends UserFriendlyTestCase
       ]);
     $this->assertResponseStatusCodeSame(200);
   }
+
+  public function testAnAdminUserCanAttributeCheeselistinToAnotherOwner()
+	{
+		$client = self::createClient();
+		$admin = $this->createUser($client,'admin@mail.com','password',['ROLE_ADMIN']);
+		$this->loginAsUser($client,'admin@mail.com','password');
+		$anyUser = $this->createUser($client,'anyUser@mail.com','password');
+		$cheeseListingData = [
+			'title' => 'titre de l\'article',
+			'price' => 1560,
+			'isPublished' => true,
+			'owner' => '/api/users/' . $anyUser->getId(),
+			'description' => 'je suis une description'
+		];
+		/** @var ResponseInterface $response */
+		$response = $client->request('POST','/api/cheese_listings',
+		[
+			'headers' => $this->goodHeaders,
+			'json' => $cheeseListingData
+		]);
+		$this->assertResponseStatusCodeSame(201);
+		$data = $response->toArray(true);
+		$cheeseListingId = null;
+		try{
+			$cheeseListingId = $data['id'];
+		}catch(TransportException $e){
+			error_log($e->getMessage());
+		}catch(JsonException $e){
+			error_log($e->getMessage());
+		}
+
+
+		// auto fail on no returned id
+		$cheeseListingId === null && $this->assertTrue(false);
+
+		// we gonna to test put also.
+		$yetAnotherUser = $this->createUser($client,'yetAnotherUser@mail.com','password');
+		$cheeseListingData['owner'] = '/api/users/' . $yetAnotherUser->getId();
+		$client->request('PUT','/api/cheese_listings/' . $cheeseListingId,
+		[
+			'headers' => $this->goodHeaders,
+			'json' => $cheeseListingData
+		]);
+		$this->assertResponseIsSuccessful();
+	}
+
+	public function testAnAuthenticatedUserCannotAttributeOwnershipOnCheeselistingCreationButIts()
+	{
+		$client = self::createClient();
+		$authenticatedUser = $this->createUser($client,'authenticatedUser@mail.com','password');
+		$otherUser = $this->createUser($client,'otherUser@mail.com','password');
+		$this->loginAsUser($client,'authenticatedUser@mail.com','password');
+		$cheeseListingData = [
+			'title' => 'titre de l\'article',
+			'price' => 1560,
+			'isPublished' => true,
+			'owner' => '/api/users/' . $otherUser->getId(),
+			'description' => 'je suis une description'
+		];
+		$client->request('POST','/api/cheese_listings',
+		[
+			'headers' => $this->goodHeaders,
+			'json' => $cheeseListingData
+		]);
+		$this->assertResponseStatusCodeSame(400);
+	}
 
 }
