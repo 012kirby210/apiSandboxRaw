@@ -11,6 +11,7 @@ use Symfony\Component\Security\Core\User\UserInterface;
 
 class CheeseListingVoter extends Voter
 {
+  const CREATE_PERMISSION = 'CREATE';
   const EDIT_PERMISSION = 'EDIT';
 
   private $security;
@@ -24,8 +25,10 @@ class CheeseListingVoter extends Voter
   {
     // replace with your own logic
     // https://symfony.com/doc/current/security/voters.html
-    return in_array($attribute, [self::EDIT_PERMISSION])
-      && $subject instanceof \App\Entity\CheeseListing;
+
+		$willSupport = in_array($attribute, [self::EDIT_PERMISSION,self::CREATE_PERMISSION])
+			&& $subject instanceof \App\Entity\CheeseListing;
+    return $willSupport;
   }
 
   protected function voteOnAttribute($attribute, $subject, TokenInterface $token)
@@ -46,6 +49,8 @@ class CheeseListingVoter extends Voter
         // return true or false
         $isAllowed = $this->evaluateEditPermission($user,$cheeseListing);
         break;
+			case self::CREATE_PERMISSION:
+				$isAllowed = $this->evaluateCreatePermission($user,$cheeseListing);
       case 'POST_VIEW':
         // logic to determine if the user can VIEW
         // return true or false
@@ -62,4 +67,12 @@ class CheeseListingVoter extends Voter
     return ($this->security->isGranted('ROLE_ADMIN')
       || $cheeseListing->getOwner() === $user);
   }
+
+  private function evaluateCreatePermission(User $user, CheeseListing $cheeseListing)
+	{
+		return ($this->security->isGranted('ROLE_ADMIN') || ($this->security->isGranted('ROLE_USER') &&
+				($cheeseListing->getOwner() === $user || !$cheeseListing->getOwner()))
+		);
+	}
+
 }

@@ -153,7 +153,15 @@ class CheeseListingRessourceTest extends UserFriendlyTestCase
 
     $this->loginAsUser($client,'firstowner@mail.com','azerty');
     // change ownership
-    $client->request('PUT','/api/cheese_listings/'.$cheeseListing->getId(),
+
+		// validation hanging there
+		// it will try to match authenticated with validating value,
+		// It should try to match authenticated with already recorded one.
+		// so the way to do it is to extend the security voter on the post collection operation
+		// and making it happens on security_post_denormalize instead of security
+		// go check CheeseListing collection operation annotation
+
+    $responseInterface = $client->request('PUT','/api/cheese_listings/'.$cheeseListing->getId(),
       [
         'headers' => [ 'accept' => ['application/json'],
           'Content-type' => ['application/json']],
@@ -162,8 +170,10 @@ class CheeseListingRessourceTest extends UserFriendlyTestCase
           'owner' => '/api/users/'.$newOwner->getId()
         ]
       ]);
+
     $this->assertResponseStatusCodeSame(200);
     // try to re-access
+
     $client->request('PUT','/api/cheese_listings/'.$cheeseListing->getId(),
       [
         'headers' => [ 'accept' => ['application/json'],
@@ -250,7 +260,35 @@ class CheeseListingRessourceTest extends UserFriendlyTestCase
 			'headers' => $this->goodHeaders,
 			'json' => $cheeseListingData
 		]);
-		$this->assertResponseStatusCodeSame(400);
+		$this->assertResponseStatusCodeSame(403);
+	}
+
+	public function testAnAuthenticatedUserShouldBeAbleToCreateCheeseListingWithoutSpecifyingAnOwner()
+	{
+		$client = self::createClient();
+		$this->createUser($client,'user@mail.com','password');
+		$this->loginAsUser($client,'user@mail.com','password');
+		$cheeseListingData = [
+			'title' => 'titre de l\'article',
+			'price' => 1560,
+			'isPublished' => true,
+			'description' => 'je suis une description'
+		];
+
+		$responseInterface = $client->request('POST','/api/cheese_listings',
+		[
+			'headers' => $this->goodHeaders,
+			'json' => $cheeseListingData
+		]);
+		$this->assertResponseStatusCodeSame(201);
+		try{
+			$arrayData = $responseInterface->toArray();
+			$this->assertArrayHasKey('owner',$arrayData);
+			$ownerIri = $arrayData['owner'];
+			$this->assertTrue($ownerIri !== 'null');
+		}catch(\Exception $e){
+			$e->getMessage();
+		}
 	}
 
 }

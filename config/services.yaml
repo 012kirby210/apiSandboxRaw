@@ -42,5 +42,9 @@ services:
     App\Serializer\Normalizer\UserNormalizer:
         arguments: ['@security.helper']
 
+    App\Doctrine\CheeseListingSetOwnerListener:
+        arguments: ['@security.helper']
+        tags: ['doctrine.orm.entity_listener']
+
 
 

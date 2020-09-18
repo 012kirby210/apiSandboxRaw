@@ -6,9 +6,11 @@ use ApiPlatform\Core\Annotation\ApiFilter;
 use ApiPlatform\Core\Annotation\ApiResource;
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\BooleanFilter;
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Filter\SearchFilter;
+use App\Validator\IsValidOwner;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Serializer\Annotation\SerializedName;
+use App\Doctrine\CheeseListingSetOwnerListener;
 use App\Repository\CheeseListingRepository;
 use Doctrine\ORM\Mapping as ORM;
 use Carbon\Carbon;
@@ -32,7 +34,7 @@ use Carbon\Carbon;
  *   },
  *   collectionOperations={
  *    "get",
- *    "post"={"security"="is_granted('ROLE_USER')"}
+ *    "post"={"security_post_denormalize"="is_granted('CREATE',object)"}
  *   }
  * )
  * @ApiFilter(BooleanFilter::class, properties={"isPublished"})
@@ -41,6 +43,8 @@ use Carbon\Carbon;
  *    "description":"partial",
  *    "owner":"exact",
  *    "owner.username":"partial"}))
+ *
+ * @ORM\EntityListeners({"App\Doctrine\CheeseListingSetOwnerListener"})
  * @ORM\Entity(repositoryClass=CheeseListingRepository::class)
  */
 class CheeseListing
@@ -98,7 +102,8 @@ class CheeseListing
   /**
    * @ORM\ManyToOne(targetEntity=User::class, inversedBy="cheeseListings")
    *
-   * @Groups({"cheese_listing:read","cheese_listing:collection:post"})
+   * @Groups({"cheese_listing:read","cheese_listing:collection:post","cheese_listing:item:put"})
+	 * @IsValidOwner()
    */
   private $owner;
 
