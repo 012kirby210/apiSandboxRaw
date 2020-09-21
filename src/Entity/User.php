@@ -8,6 +8,7 @@ use App\Repository\UserRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use PhpParser\ErrorHandler\Collecting;
 use Symfony\Component\Security\Core\User\UserInterface;
 use ApiPlatform\Core\Annotation\ApiResource;
 use Symfony\Component\Serializer\Annotation\Groups;
@@ -202,6 +203,13 @@ class User implements UserInterface
     {
         return $this->cheeseListings;
     }
+
+    public function getPublishedCheeseListings(): Collection
+		{
+			return $this->cheeseListings->filter(function(CheeseListing $cheeseListing){
+				return $cheeseListing->getIsPublished();
+			});
+		}
 
     public function addCheeseListing(CheeseListing $cheeseListing): self
     {

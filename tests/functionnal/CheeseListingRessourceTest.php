@@ -291,4 +291,54 @@ class CheeseListingRessourceTest extends UserFriendlyTestCase
 		}
 	}
 
+	public function testCheeseListingsShouldBeListedDependingOnItsActiveStatus()
+	{
+		$client = self::createClient();
+		$user = $this->createUser($client, 'user@mail.com', 'password');
+		$this->loginAsUser($client, 'user@mail.com','password');
+		$cheeseListing1 = new CheeseListing('cheese1');
+		$cheeseListing1->setOwner($user);
+		$cheeseListing1->setPrice(1000);
+		$cheeseListing1->setDescription('cheese');
+		$cheeseListing2 = new CheeseListing('cheese2');
+		$cheeseListing2->setOwner($user);
+		$cheeseListing2->setPrice(1000);
+		$cheeseListing2->setDescription('cheese');
+		$cheeseListing2->setIsPublished(true);
+		$cheeseListing3 = new CheeseListing('cheese3');
+		$cheeseListing3->setOwner($user);
+		$cheeseListing3->setPrice(1000);
+		$cheeseListing3->setDescription('cheese');
+		$cheeseListing3->setIsPublished(true);
+		$em = self::$container->get('doctrine.orm.entity_manager');
+		$em->persist($cheeseListing1);
+		$em->persist($cheeseListing2);
+		$em->persist($cheeseListing3);
+		$em->flush();
+
+		$responseInterface = $client->request('GET','/api/cheese_listings');
+		$this->assertJsonContains(['hydra:totalItems' => 2]);
+	}
+
+	public function testUnpublishedCheeseListingShouldLandOn404()
+	{
+		$client = self::createClient();
+		$user = $this->createUser($client,'user@mail.com','password');
+		$otherUser = $this->createUser($client,'other@mail.com','password');
+		$cheeseListing1 = new CheeseListing('cheese1');
+		$cheeseListing1->setOwner($user);
+		$cheeseListing1->setPrice(1000);
+		$cheeseListing1->setDescription('cheese');
+		$cheeseListing1->setIsPublished(false);
+		$em = self::$container->get('doctrine.orm.entity_manager');
+		$em->persist($cheeseListing1);
+		$em->flush();
+		$this->loginAsUser($client,'other@mail.com','password');
+		$client->request('GET','/api/cheese_listings/'.$cheeseListing1->getId());
+		$this->assertResponseStatusCodeSame(404);
+		$responseInteface = $client->request('GET','/api/users/'.$user->getId());
+		$dataArray = $responseInteface->toArray();
+		var_dump($dataArray);
+	}
+
 }

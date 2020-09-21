@@ -107,8 +107,9 @@ class CheeseListing
    */
   private $owner;
 
-  public function __construct()
+  public function __construct(?String $title = null)
   {
+  	$this->title = $title?? null ;
     $this->createdAt = new \DateTimeImmutable();
   }
 
